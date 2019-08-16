@@ -19,8 +19,8 @@ Bob, on the other hand, is willing to store the data for Alice and be paid a `re
 storage conditions, however they face some counterparty risks, namely:
 1. If Alice due to some reason would not need the data anymore, Bob may not get paid
 2. If Bob provides data back to Alice on her request, Alice have no obligations to pay to Bob
-3. If Alice decides that the cost of storage exceeds the `reward` later (when the agreement is set), she may delete the
-   data and Bob will be unable to receive them back even if he is still willing to pay.
+3. If Bob decides that the cost of storage exceeds the `reward` later (when the agreement is set), he may delete the
+   data and Alice will be unable to receive them back even if she is still willing to pay.
 
 All these risks can be mitigated with a specially designed **storm payment channel**, created with a published **funding
 transaction** followed by partially-signed unpublished transactions containing special forms of Bitcoin script-based
@@ -36,22 +36,22 @@ The proposed protocol utilises the following technologies:
 * HTLC contracts
 * Data encryption with asymmetric key pairs
 
-The first counterparty risk (of Alice loosing reward in case when Bob does not needs CSV data anymore and avoids payment)
-is mitigated by Bob depositing `reward` to a special *funding transaction* containing CSV-output to Alice public key.
-This output must be in a distant future, much beyond the time when Bob needs to receive the data, and must contain 
-`reward/factor`, in order to ensure that Alice will provide the data to Bob on his request.
+The first counterparty risk (of Bob loosing reward in case when Alice does not need CSV data anymore and avoids payment)
+is mitigated by Alice depositing `reward` to a special *funding transaction* containing CSV-output to Bob's public key.
+This output must be in a distant future, much beyond the time when Alice needs to receive the data, and must contain 
+`reward/factor`, in order to ensure that Bob will provide the data to Alice on her request.
 
-The second counterparty risk (of Bob not paying Alice for the data provided) is mitigated by creation of a special 
-**HTLC transaction**, pre-signed by Bob, allocating full `reward` to Alice when she will expose the decryption key –
-after Alice provided Bob with an encrypted copy of the data and a hash of the decryption key. To make sure that Alice
-did decrypt the correct data, it also provides Bob with a specially-constructed 
+The second counterparty risk (of Alice not paying Bob for the data provided) is mitigated by creation of a special 
+**HTLC transaction**, pre-signed by Alice, allocating full `reward` to Bob when he will expose the decryption key –
+after Bob provided Alice with an encrypted copy of the data and a hash of the decryption key. To make sure that Bob
+did decrypt the correct data, it also provides Alice with a specially-constructed 
 [probabilistic checkable proof](#probabilistic-checkable-proofs).
 
-The third counterparty risk (of Alice discarding Bob's data if she is not interested in the `reward` anymore) is 
-mitigated by Alice depositing a `stake >> reward` into the *funding transaction*, which will be paid back to Alice only 
+The third counterparty risk (of Bob discarding Alice's data if he is not interested in the `reward` anymore) is 
+mitigated by Bob depositing a `stake >> reward` into the *funding transaction*, which will be paid back to Bob only 
 if the *HTLC transaction* will be published onchain; otherwise these funds will go to Bob under CSV condition.
 
-Scenario        | Alice payment  | Bob payment
+Scenario        | Bob payment    | Alice payment
 --------------- | -------------- | -----------
 Cooperative     | `reward+stake` | `0`
 Bob's timeout   | `reward+stake` | `0`
@@ -75,8 +75,8 @@ Probabilistic checkable proofs allows to verify in a non-interactive way computa
 (like data encoding in our case) without exposing the source data used for computation (i.e. providing zero-knowledge
 argument). 
 
-Briefly, if Alice wants to provide Bob with some non-interactive argument that the encrypted data (available to Bob)
-are really correspond to some un-encrypted pre-image (which is unknown to Bob), she needs to undertake the following:
+Briefly, if Bob wants to provide Alice with some non-interactive argument that the encrypted data (available to Alice)
+are really correspond to some un-encrypted pre-image (which is unknown to Bob), he needs to undertake the following:
 1. Split the source data into chunks of the same size (like 256 bytes or 1kb)
 2. Encrypt those data chunk by chunk with some encryption key
 3. Compute Merkle trees from hashes of the chunks in unencrypted source data and encrypted data
@@ -89,24 +89,24 @@ are really correspond to some un-encrypted pre-image (which is unknown to Bob), 
    * Merkle tree paths to the selected chunks
    * hash of the combined Merkle tree roots
    
-With this data Bob will be able to check with this zero-knowledge argument by:
+With this data Alice will be able to check with this zero-knowledge argument by:
 1. Checking Merkle tree paths leading to the chunks and resulting Merkle tree root hash to correspond to them
 2. Checking that the selected source data chunks when encrypted with the proviede encryption key are byte-to-byte 
-   equal to their encrypted version provided by Alice.
+   equal to their encrypted version provided by Bob.
 
-If Alice wants to falsify the proof (because, for instance, she keeps only some part of the data), she needs to "mine" 
+If Bob wants to falsify the proof (because, for instance, she keeps only some part of the data), he needs to "mine" 
 encryption and decryption key pairs in such a way that the data encrypted with them will result in a such Merkle tree 
-root hash will allow to select only those blocks which are kept by her. Since encryption process is expensive, and it 
-also requires multiple hashes to be computed, it's quite easier to make the cost of such brute-force attack by Alice to 
+root hash will allow to select only those blocks which are kept by he. Since encryption process is expensive, and it 
+also requires multiple hashes to be computed, it's quite easier to make the cost of such brute-force attack by Bob to 
 be significantly higher then the actual `reward+stake`, i.e. render it economically irrational.
 
 ## Storm with Lightning
 
-The proposed **funding transaction**, keeping both `reward` from Bob and `stake` from Alice in case of Lightning channel
-between Alice and Bob will be represended by a funds coming from both parties allocated into an additional output within
+The proposed **funding transaction**, keeping both `reward` from Alice and `stake` from Bob in case of Lightning channel
+between Alice and Bob will be represented by a funds coming from both parties allocated into an additional output within
 the **commitment transaction**, which can be spend in the exactly the same manner either via timeouts or HTLC-based
 settlement. Once HTLC-based settlement is achieved, this output can be discarded and the **commitment transaction** can
-be updated with a new balances taking into account the `reward` paid to Alice by Bob.
+be updated with a new balances taking into account the `reward` paid to Bob by Alice.
 
 ## Messaging support
 
@@ -117,11 +117,11 @@ of Lightning Network routing.
 
 ## Further possible enhancements
 
-The workflow can be extended to the case when Bob's makes regular requests to Alice in order to proof the fact that
-Alice continues to keep the data to further insure data safety; in this case Alice will have to generate new encryption/
-decription key pair each time and the HTLC transaction needs to be updated alike LN commitment transaction.
+The workflow can be extended to the case when Alice makes regular requests to Bob in order to proof the fact that
+Bob continues to keep the data to further insure data safety; in this case Bob will have to generate new encryption/
+decryption key pair each time and the HTLC transaction needs to be updated alike LN commitment transaction.
 
-Also, the actual data may be split by Bob into multiple pieces, so not only Alice, but many other parties will be 
+Also, the actual data may be split by Alice into multiple pieces, so not only Bob, but many other parties will be 
 responsible for keeping the data (like in Bittorrent protocol) with some degree of redundancy.
 
 ## Contributors

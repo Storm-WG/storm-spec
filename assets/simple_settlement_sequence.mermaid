@@ -2,10 +2,8 @@ sequenceDiagram
     participant A as Alice
     participant B as Bob (storage provider)
     participant BB as Bitcoin Blockchain
-    activate A
-    A->>A: Sign funding tx
-    deactivate A
-    A-->>BB: Send funding tx
+    A->>B: Signature for funding tx
+    B-->>BB: Send funding tx
     Note over A, BB: some time later
   alt if Alice requests the data
     A-->>B: Request data
