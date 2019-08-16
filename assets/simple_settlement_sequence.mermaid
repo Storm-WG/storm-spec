@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant A as Alice
+    participant B as Bob (storage provider)
+    participant BB as Bitcoin Blockchain
+    activate A
+    A->>A: Sign funding tx
+    deactivate A
+    A-->>BB: Send funding tx
+    Note over A, BB: some time later
+  alt if Alice requests the data
+    A-->>B: Request data
+    activate B
+    B->>B: Create new key pair
+    B-->>A: decryption key hash
+    B->>B: Encrypt data with encryption key
+    B-->>A: encrypted data
+    B->>B: Compute PCP proof
+    B-->>A: PCP proof
+    deactivate B
+    activate A
+    A->>A: Verify PCP proof
+    A-->>BB: Publish HTLC transaction
+    deactivate A
+    B-->>BB: Spend HTLC output revealing decryption key preimage
+    activate A
+    BB->>A: Get decryption key
+    A->>A: Decrypt the data
+    deactivate A
+  else if Alice disappears
+    Note over B, BB: After funding tx CTLV timeout
+    B-->>BB: Publish reward tx spending CTLV output
+  end
