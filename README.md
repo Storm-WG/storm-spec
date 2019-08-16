@@ -32,11 +32,12 @@ The proposed protocol utilises the following technologies:
 * Probabilistic checkable proofs [see collection of papers here](https://github.com/dr-orlovsky/library/tree/master/privacy%20%26%20zk/computational%20integrity)
 * Concept of payment channels
 * Partially-signed and unpublished bitcoin transactions
+* CVS-locked transactions
 * HTLC contracts
 * Data encryption with asymmetric key pairs
 
-The first counterparty risk (of Alice loosing reward in case when Bob does not needs the data anymore and avoids payment)
-is mitigated by Bob depositing `reward` to a special *funding thransaction* containing CLTV-output to Alice public key.
+The first counterparty risk (of Alice loosing reward in case when Bob does not needs CSV data anymore and avoids payment)
+is mitigated by Bob depositing `reward` to a special *funding transaction* containing CSV-output to Alice public key.
 This output must be in a distant future, much beyond the time when Bob needs to receive the data, and must contain 
 `reward/factor`, in order to ensure that Alice will provide the data to Bob on his request.
 
@@ -47,12 +48,22 @@ did decrypt the correct data, it also provides Bob with a specially-constructed
 [probabilistic checkable proof](#probabilistic-checkable-proofs).
 
 The third counterparty risk (of Alice discarding Bob's data if she is not interested in the `reward` anymore) is 
-mitigated by Alice depositing a `stake` into the *fundinf transaction*, which will be paid back to Alice only if 
-**HTLC transaction** will be published onchain; otherwise these funds will go to Bob under CLTV condition.
+mitigated by Alice depositing a `stake >> reward` into the *funding transaction*, which will be paid back to Alice only 
+if the *HTLC transaction* will be published onchain; otherwise these funds will go to Bob under CSV condition.
+
+Scenario        | Alice payment  | Bob payment
+--------------- | -------------- | -----------
+Cooperative     | `reward+stake` | `0`
+Bob's timeout   | `reward+stake` | `0`
+Alice's timeout | `reward`       | `stake`
+
+Thus, the *funding transaction* should be constructed in the following way:
+
+<img src="assets/funding_tx.png" alt="Funding transaction" width="333"/>
 
 The simple sequence of these actions looks in the following way:
 
-![Simple sequence view](assets/simple_settlement_sequence.svg)
+<img src="assets/simple_settlement_sequence.svg" alt="Simple sequence view" width="666"/>
 
 The data workflow is organized in the following way:
 
