@@ -9,7 +9,16 @@ Storm is a L2/L3 distributed storage and messaging with economic incentivisation
 * [Further possible enhancements](#further-possible-enhancements)
 * [Contributors](#contributors)
 
+
 ## Protocol overview
+
+In order to undestand the specification, you have to have a previous knowledge of the following technologies:
+* Probabilistic checkable proofs [see collection of papers here](https://github.com/dr-orlovsky/library/tree/master/privacy%20%26%20zk/computational%20integrity)
+* Concept of payment channels
+* Partially-signed and unpublished bitcoin transactions
+* CVS-locked transactions
+* HTLC contracts
+* Data encryption with asymmetric key pairs
 
 Let's start with a simple storage case – and later we will elaborate on how it can be extended to 
 [messaging](#messaging-support) and [more complex storage scenarios](#further-possible-enhancements).
@@ -28,46 +37,46 @@ smart contracts described below. Moreover, this *storm payment channel* may be c
 Network channel with addition of special outputs to the **LN commitment transaction** (which will require modification
 of some of existing BOLTs) – see [Storm with Lightning](#storm-with-lightning) section for the details.
 
-The proposed protocol utilises the following technologies:
-* Probabilistic checkable proofs [see collection of papers here](https://github.com/dr-orlovsky/library/tree/master/privacy%20%26%20zk/computational%20integrity)
-* Concept of payment channels
-* Partially-signed and unpublished bitcoin transactions
-* CVS-locked transactions
-* HTLC contracts
-* Data encryption with asymmetric key pairs
-
 The first counterparty risk (of Bob loosing reward in case when Alice does not need CSV data anymore and avoids payment)
 is mitigated by Alice depositing `reward` to a special *funding transaction* containing CSV-output to Bob's public key.
 This output must be in a distant future, much beyond the time when Alice needs to receive the data, and must contain 
-`reward/factor`, in order to ensure that Bob will provide the data to Alice on her request.
+`reward`. In order to ensure that Bob will provide the data to Alice on her request Bob also co-signs an 
+**HTLC settlement transaction** and provides it to Alice. This transaction spends the full amount of funds from the
+**funding transaction** and, if signed by Alice and published (which signifies that Alice did not timeout), discards 
+Bob's ability to retrieve the funds.
 
-The second counterparty risk (of Alice not paying Bob for the data provided) is mitigated by creation of a special 
-**HTLC transaction**, pre-signed by Alice, allocating full `reward` to Bob when he will expose the decryption key –
-after Bob provided Alice with an encrypted copy of the data and a hash of the decryption key. To make sure that Bob
-did decrypt the correct data, it also provides Alice with a specially-constructed 
+The second counterparty risk (of Alice not paying Bob for the data provided) is mitigated by the same
+**HTLC settlement transaction**, pre-signed by Bob, allocating all of the deposited funds to Bob in case when he exposes
+the decryption key. Alice signs this transaction only when she receives an encrypted copy of the data and a hash of the 
+decryption key. To make sure that Bob did decrypt the correct data, it also provides Alice with a specially-constructed 
 [probabilistic checkable proof](#probabilistic-checkable-proofs).
 
 The third counterparty risk (of Bob discarding Alice's data if he is not interested in the `reward` anymore) is 
-mitigated by Bob depositing a `stake >> reward` into the *funding transaction*, which will be paid back to Bob only 
-if the *HTLC transaction* will be published onchain; otherwise these funds will go to Bob under CSV condition.
+mitigated by Bob depositing a `stake` into the *funding transaction*, which will be paid back to Bob only 
+if the *HTLC settlement transaction* cooperative conditions are fullfilled; otherwise these funds will go to Alice 
+under CSV condition.
 
-Scenario        | Bob payment    | Alice payment
---------------- | -------------- | -----------
-Cooperative     | `reward+stake` | `0`
-Bob's timeout   | `reward+stake` | `0`
-Alice's timeout | `reward`       | `stake`
+All aforementioned scenarios are summarized in the table:
 
-Thus, the *funding transaction* should be constructed in the following way:
+Scenario                                      | Bob payment    | Alice payment
+--------------------------------------------- | -------------- | -----------
+Initial deposits for all scenarios            | `stake`        | `reward`
+N1. Cooperative                               | `reward+stake` | `0`
+N2. Alice did not requested the data from Bob | `reward+stake` | `0`
+N3. Bob did not provide Alice with the data   | `0`            | `stake+reward`
 
-<img src="assets/funding_tx.png" alt="Funding transaction" width="333"/>
+The *funding transaction* and *HTLC settlement transaction*  should be constructed in the following way:
 
-The simple sequence of these actions looks in the following way:
+![Transaction structure](assets/tx_structure.png)
 
-<img src="assets/simple_settlement_sequence.svg" alt="Simple sequence view" width="666"/>
+The simple sequence of the actions taken by Alice and Bob should look in the following way:
 
-The data workflow is organized in the following way:
+<img src="assets/simple_settlement_sequence.svg" alt="Simple settlement sequence" width="666"/>
 
-![General workflow](assets/storm_workflow.png)
+
+The data workflow between Alice and Bob is organized in the following way:
+
+![General workflow](assets/workflow.png)
 
 ## Probabilistic checkable proofs
 
@@ -104,9 +113,9 @@ be significantly higher then the actual `reward+stake`, i.e. render it economica
 
 The proposed **funding transaction**, keeping both `reward` from Alice and `stake` from Bob in case of Lightning channel
 between Alice and Bob will be represented by a funds coming from both parties allocated into an additional output within
-the **commitment transaction**, which can be spend in the exactly the same manner either via timeouts or HTLC-based
-settlement. Once HTLC-based settlement is achieved, this output can be discarded and the **commitment transaction** can
-be updated with a new balances taking into account the `reward` paid to Bob by Alice.
+the **LN commitment transaction**, which can be spend in the exactly the same manner either via timeouts or HTLC-based
+settlement. Once HTLC-based settlement is achieved, this output can be discarded and the **LN commitment transaction** 
+can be updated with new balances taking into account the `reward` paid to Bob by Alice.
 
 ## Messaging support
 

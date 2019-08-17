@@ -2,8 +2,9 @@ sequenceDiagram
     participant A as Alice
     participant B as Bob (storage provider)
     participant BB as Bitcoin Blockchain
+    B->>A: Signature for HTLC settlement tx
     A->>B: Signature for funding tx
-    B-->>BB: Send funding tx
+    B-->>BB: Publish funding tx
     Note over A, BB: some time later
   alt if Alice requests the data
     A-->>B: Request data
@@ -17,11 +18,12 @@ sequenceDiagram
     deactivate B
     activate A
     A->>A: Verify PCP proof
-    A-->>BB: Publish HTLC transaction
+    A->>A: Sign HTLC settlement tx
+    A-->>BB: Publish HTLC tx
     deactivate A
     B-->>BB: Spend HTLC output revealing decryption key preimage
     activate A
-    BB->>A: Get decryption key
+    BB-->>A: Get decryption key
     A->>A: Decrypt the data
     deactivate A
   else if Alice disappears
