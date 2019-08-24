@@ -12,7 +12,7 @@ Storm is a L2/L3 distributed storage and messaging with economic incentivisation
 
 ## Protocol overview
 
-In order to undestand the specification, you have to have a previous knowledge of the following technologies:
+In order to understand the specification, you have to have a previous knowledge of the following technologies:
 * Probabilistic checkable proofs [see collection of papers here](https://github.com/dr-orlovsky/library/tree/master/privacy%20%26%20zk/computational%20integrity)
 * Concept of payment channels
 * Partially-signed and unpublished bitcoin transactions
@@ -28,8 +28,8 @@ Bob, on the other hand, is willing to store the data for Alice and be paid a `re
 storage conditions, however they face some counterparty risks, namely:
 1. If Alice due to some reason would not need the data anymore, Bob may not get paid
 2. If Bob provides data back to Alice on her request, Alice have no obligations to pay to Bob
-3. If Bob decides that the cost of storage exceeds the `reward` later (when the agreement is set), he may delete the
-   data and Alice will be unable to receive them back even if she is still willing to pay.
+3. If Bob loses the data – or decides that the cost of storage exceeds the `reward` later (when the agreement is set), 
+   he may delete the data and Alice will be unable to receive them back even if she is still willing to pay.
 
 All these risks can be mitigated with a specially designed **storm payment channel**, created with a published **funding
 transaction** followed by partially-signed unpublished transactions containing special forms of Bitcoin script-based
@@ -56,18 +56,22 @@ mitigated by Bob depositing a `stake` into the *funding transaction*, which will
 if the *HTLC settlement transaction* cooperative conditions are fullfilled; otherwise these funds will go to Alice 
 under CSV condition.
 
-All aforementioned scenarios are summarized in the table:
+The transaction graph for the storm channel should be constructed in the following way:
+
+![Transaction structure](assets/tx_structure.png)
+
+
+These transactions covers the following scenarios:
 
 Scenario                                      | Bob payment    | Alice payment
 --------------------------------------------- | -------------- | -----------
 Initial deposits for all scenarios            | `stake`        | `reward`
 N1. Cooperative                               | `reward+stake` | `0`
 N2. Alice did not requested the data from Bob | `reward+stake` | `0`
-N3. Bob did not provide Alice with the data   | `0`            | `stake+reward`
+N3. Bob did not kept the data                 | `0`            | `stake+reward`
+N4. Bob kept the data, but cooperation with Alice failed | `stake+reward*factor` | `reward*(1-factor)`
+N5. Alice was provided with the data but not with the decryption key | `0`       | `stake+reward`
 
-The *funding transaction* and *HTLC settlement transaction*  should be constructed in the following way:
-
-![Transaction structure](assets/tx_structure.png)
 
 The simple sequence of the actions taken by Alice and Bob should look in the following way:
 
