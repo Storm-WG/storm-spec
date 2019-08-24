@@ -27,7 +27,7 @@ In our initial setting, Alice wants to store some data remotely and prepared to 
 Bob, on the other hand, is willing to store the data for Alice and be paid a `reward`. Alice and Bob can agree on the
 storage conditions, however they face some counterparty risks, namely:
 1. If Alice due to some reason would not need the data anymore, Bob may not get paid
-2. If Bob provides data back to Alice on her request, Alice have no obligations to pay to Bob
+2. If Bob provides data back to Alice on her request, Alice has no obligations to pay to Bob
 3. If Bob loses the data – or decides that the cost of storage exceeds the `reward` later (when the agreement is set), 
    he may delete the data and Alice will be unable to receive them back even if she is still willing to pay.
 
@@ -38,7 +38,7 @@ Network channel with addition of special outputs to the **LN commitment transact
 of some of existing BOLTs) – see [Storm with Lightning](#storm-with-lightning) section for the details.
 
 The first counterparty risk (of Bob loosing reward in case when Alice does not need CSV data anymore and avoids payment)
-is mitigated by Alice depositing `reward` to a special *funding transaction* containing CSV-output to Bob's public key.
+is mitigated by Alice depositing `reward` to a special *funding transaction* containing a CSV-output to Bob's public key.
 This output must be in a distant future, much beyond the time when Alice needs to receive the data, and must contain 
 `reward`. In order to ensure that Bob will provide the data to Alice on her request Bob also co-signs an 
 **HTLC settlement transaction** and provides it to Alice. This transaction spends the full amount of funds from the
@@ -93,10 +93,10 @@ are really correspond to some un-encrypted pre-image (which is unknown to Bob), 
 1. Split the source data into chunks of the same size (like 256 bytes or 1kb)
 2. Encrypt those data chunk by chunk with some encryption key
 3. Compute Merkle trees from hashes of the chunks in unencrypted source data and encrypted data
-4. Combine two Merkle tree roots into a single one and get SHD256 hash of it. This hash will work as a random oracle for
+4. Combine two Merkle tree roots into a single one and get SHA256 hash of it. This hash will work as a random oracle for
    further process
 5. Use this random number to select 1-10% of the data chunks
-6. Provide Bob with
+6. Provide Alice with
    * encryption key
    * selected data chunks (for both encrypted and unencrypted data)
    * Merkle tree paths to the selected chunks
@@ -107,10 +107,10 @@ With this data Alice will be able to check with this zero-knowledge argument by:
 2. Checking that the selected source data chunks when encrypted with the proviede encryption key are byte-to-byte 
    equal to their encrypted version provided by Bob.
 
-If Bob wants to falsify the proof (because, for instance, she keeps only some part of the data), he needs to "mine" 
+If Bob wants to falsify the proof (because, for instance, he keeps only some part of the data), he needs to "mine" 
 encryption and decryption key pairs in such a way that the data encrypted with them will result in a such Merkle tree 
-root hash will allow to select only those blocks which are kept by he. Since encryption process is expensive, and it 
-also requires multiple hashes to be computed, it's quite easier to make the cost of such brute-force attack by Bob to 
+root hash will allow to select only those blocks which are kept by him. Since encryption process is expensive, and it 
+also requires multiple hashes to be computed, it's quite easy to make the cost of such brute-force attack by Bob to 
 be significantly higher then the actual `reward+stake`, i.e. render it economically irrational.
 
 ## Storm with Lightning
