@@ -1,6 +1,6 @@
 # Storm
 
-Storm is a L2/L3 distributed storage and messaging with economic incentivisation leveraging LNP/BP ecosystem. 
+Storm is a L2/L3 distributed storage and messaging protocol with economic incentivisation leveraging LNP/BP ecosystem. 
 
 * [Protocol overview](#protocol-overview)
 * [Probabilistic checkable proofs](#probabilistic-checkable-proofs)
@@ -37,7 +37,7 @@ smart contracts described below. Moreover, this *storm payment channel* may be c
 Network channel with addition of special outputs to the **LN commitment transaction** (which will require modification
 of some of existing BOLTs) – see [Storm with Lightning](#storm-with-lightning) section for the details.
 
-The first counterparty risk (of Bob loosing reward in case when Alice does not need CSV data anymore and avoids payment)
+The first counterparty risk (of Bob losing reward in case when Alice does not need CSV data anymore and avoids payment)
 is mitigated by Alice depositing `reward` to a special *funding transaction* containing a CSV-output to Bob's public key.
 This output must be in a distant future, much beyond the time when Alice needs to receive the data, and must contain 
 `reward`. In order to ensure that Bob will provide the data to Alice on her request Bob also co-signs an 
@@ -68,7 +68,7 @@ Scenario                                      | Bob payment    | Alice payment
 Initial deposits for all scenarios            | `stake`        | `reward`
 N1. Cooperative                               | `reward+stake` | `0`
 N2. Alice did not requested the data from Bob | `reward+stake` | `0`
-N3. Bob did not kept the data                 | `0`            | `stake+reward`
+N3. Bob did not keep the data                 | `0`            | `stake+reward`
 N4. Bob kept the data, but cooperation with Alice failed | `stake+reward*factor` | `reward*(1-factor)`
 N5. Alice was provided with the data but not with the decryption key | `0`       | `stake+reward`
 
